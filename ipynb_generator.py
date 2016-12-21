@@ -141,6 +141,9 @@ This is the footer notes for this generated notebook.
 
     import sys
 
+    suffix = '.ipynb'
+    overwrite = True
+
     if len(sys.argv) == 1:
         print(main(text))
     else:
@@ -150,8 +153,8 @@ This is the footer notes for this generated notebook.
             with open(filename, 'r') as fin:
                 text = fin.read()
             root, ext = os.path.splitext(filename)
-            outputname = '{:s}.ipynb'.format(root)
-            # if os.path.isfile(outputname):
-            #     raise RuntimeError(
-            #         'An output file [{}] already exists'.format(outputname))
+            outputname = '{:s}{:s}'.format(root, suffix)
+            if not overwrite and os.path.isfile(outputname):
+                raise RuntimeError(
+                    'An output file [{}] already exists'.format(outputname))
             main(text, outputname)

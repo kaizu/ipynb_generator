@@ -24,3 +24,17 @@ print(np.log(1.0))
 ## Text
 
 This is the footer notes for this generated notebook.
+
+Magic method:
+<!---python--->
+```python
+%matplotlib inline
+```
+<!--- --->
+Matplotlib:
+<!---python--->
+```python
+import matplotlib.pylab as plt
+plt.plot(range(100), [x * x for x in range(100)], 'k-')
+plt.show()
+```
