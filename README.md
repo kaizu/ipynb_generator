@@ -27,3 +27,4 @@ To show the usage, do as `python ipynb_generator.py -h`.
 
 - http://hplgit.github.io/doconce/doc/pub/ipynb/ipynb_generator.html
 - https://github.com/hplgit/doconce/blob/master/doc/src/ipynb/ipynb_generator.py
+- http://nbconvert.readthedocs.io/en/stable/execute_api.html
