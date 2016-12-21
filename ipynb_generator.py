@@ -169,12 +169,14 @@ This is the footer notes for this generated notebook.
     parser.add_argument('--noexec', '-n', action='store_true', help='save notebooks without execution')
     parser.add_argument('--nooverwrite', action='store_true', help='avoid to overwrite an existing file')
     parser.add_argument('--suffix', action='store', type=str, default='.ipynb', help='suffix for the output')
+    parser.add_argument('--prefix', action='store', type=str, help='prefix for the output')
     args = parser.parse_args()
 
     filenames = args.filenames
     execute = not args.noexec
     overwrite = not args.nooverwrite
     suffix = args.suffix
+    prefix = args.prefix
 
     if len(filenames) == 0:
         print(main(text))
@@ -186,8 +188,10 @@ This is the footer notes for this generated notebook.
     for filename in filenames:
         with open(filename, 'r') as fin:
             text = fin.read()
-        root, ext = os.path.splitext(filename)
+        header, tail = os.path.split(filename)
+        root, ext = os.path.splitext(tail)
         outputname = '{:s}{:s}'.format(root, suffix)
+        outputname = os.path.join(header if prefix is None else prefix, outputname)
         if not overwrite and os.path.isfile(outputname):
             raise RuntimeError(
                 'An output file [{}] already exists'.format(outputname))
