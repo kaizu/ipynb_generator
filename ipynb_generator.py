@@ -18,6 +18,32 @@ logger.setLevel(DEBUG)
 logger.addHandler(handler)
 
 
+def preprocess(text):
+    retval = []
+    isinside = False
+    for line in text.splitlines():
+        tmp = line.strip()
+        if tmp.startswith('```'):
+            if tmp[3: ] == '':
+                if isinside:
+                    isinside = False
+                    retval.append(line)
+                    retval.append('<!--- --->')
+                else:
+                    isinside = True
+                    retval.append('<!---raw--->')
+                    retval.append(line)
+            else:
+                if isinside:
+                    raise SyntaxError(
+                        "Wrong syntax. A code block starts in the other block.")
+                isinside = True
+                retval.append('<!---{:s}--->'.format(tmp[3: ]))
+                retval.append(line)
+        else:
+            retval.append(line)
+    return '\n'.join(retval)
+
 def readmd(text):
     delimiter = re.compile(r'<!---\s*([a-zA-Z0-9]+)?\s*--->')
     cell_type, language = 'markdown', None
@@ -134,7 +160,10 @@ def executenb(text, nbversion=4, timeout=600, kernel_name='python3', run_path='.
 
 
 if __name__ == "__main__":
-    def main(text, filename=None, execute=True, timeout=600):
+    def main(text, filename=None, execute=True, timeout=600, preproc=True):
+        if preproc:
+            text = preprocess(text)
+            # print(text)
         cells = readmd(text)
         # print(cells)
         output = translatenb(cells)
@@ -145,29 +174,28 @@ if __name__ == "__main__":
                 fout.write(output)
         return output
 
-    text = """<!--- --->
-## Test of Jupyter Notebook generator
+    text = """## Test of Jupyter Notebook generator
 
 This is a generated file using `misc/ipynb_generator.py`.
-<!--- --->
+
 ## Math
 
 This is a test notebook.
 
 $$y'=ky$$
-<!---python--->
+
 ```python
 import numpy as np
 
 print(np.exp(1.0))
 ```
-<!--- --->
+
 The above is a Python code for the following:
 
 ```python
 print(np.log(1.0))
 ```
-<!--- --->
+
 ## Text
 
 This is the footer notes for this generated notebook.
@@ -181,6 +209,7 @@ This is the footer notes for this generated notebook.
     parser.add_argument('--suffix', action='store', type=str, default='.ipynb', help='suffix for the output')
     parser.add_argument('--prefix', action='store', type=str, help='prefix for the output')
     parser.add_argument('--timeout', action='store', type=int, default=600, help='timeout for the execution')
+    parser.add_argument('--nopreproc', action='store_true', help='skip preprocessing')
     args = parser.parse_args()
 
     filenames = args.filenames
@@ -189,6 +218,7 @@ This is the footer notes for this generated notebook.
     suffix = args.suffix
     prefix = args.prefix
     timeout = args.timeout
+    preproc = not args.nopreproc
 
     if len(filenames) == 0:
         print(main(text, timeout=timeout))
@@ -207,4 +237,4 @@ This is the footer notes for this generated notebook.
         if not overwrite and os.path.isfile(outputname):
             raise RuntimeError(
                 'An output file [{}] already exists'.format(outputname))
-        main(text, outputname, execute, timeout)
+        main(text, outputname, execute, timeout, preproc=preproc)

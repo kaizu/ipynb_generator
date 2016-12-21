@@ -12,6 +12,8 @@ To show the usage, do as `python ipynb_generator.py -h`.
 
 ## SYNTAX
 
+A code block in the given markdown is automatically translated into a code cell.
+
 `<!--- --->` works as a separator for cells.
 
 `<!---python--->` tells the following cell is a code for Python. In the cell, lines starts with three back-ticks, \`\`\`, are ignored at the generation. Thus, the typical way to specifying a code for Python is:
