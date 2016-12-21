@@ -2,7 +2,7 @@
 
 ## HOWTO
 
-The following command will generator `sample.ipynb`.
+The following command will generator `sample.ipynb` from `sample.md`.
 
 ```
 $ python ipynb_generator.py sample.md
