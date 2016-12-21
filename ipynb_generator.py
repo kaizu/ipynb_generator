@@ -131,11 +131,10 @@ if __name__ == "__main__":
         output = translatenb(cells)
         if execute:
             output = executenb(output, outputname=filename)
-        if filename is None:
-            return output
-        else:
+        if filename is not None:
             with open(filename, 'w') as fout:
                 fout.write(output)
+        return output
 
     text = """<!--- --->
 ## Test of Jupyter Notebook generator
@@ -147,11 +146,13 @@ This is a generated file using `misc/ipynb_generator.py`.
 This is a test notebook.
 
 $$y'=ky$$
-<!---python--->```python
+<!---python--->
+```python
 import numpy as np
 
 print(np.exp(1.0))
-```<!--- --->
+```
+<!--- --->
 The above is a Python code for the following:
 
 ```python
