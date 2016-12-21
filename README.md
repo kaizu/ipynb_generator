@@ -14,10 +14,9 @@ $ python ipynb_generator.py sample.md
 
 `<!---python--->` tells the following cell is a code for Python. Lines starts with three back-ticks ````` are ignored. Thus, the typical way to specifying a code for Python is:
 
-```
-<!---python--->
-```python
-# do something here
-```
-<!--- --->
-```
+    <!---python--->
+    ```python
+    # do something here
+    ```
+    <!--- --->
+    Markdown here.
