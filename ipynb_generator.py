@@ -70,9 +70,9 @@ def readmd(text):
             if len(cells) == 0:
                 cells.append([cell_type, language, []])  ## the first line
 
-            if cell_type in ('markdown', 'raw'):
+            if cell_type == 'markdown':
                 cells[-1][2].append(line)
-            elif cell_type == 'code':
+            elif cell_type in ('code', 'raw'):
                 if not line.lstrip().startswith('```'):
                     cells[-1][2].append(line)
             else:
@@ -126,8 +126,9 @@ def translatenb_v4(cells):
         block = '\n'.join(block)
 
         if cell_type == 'markdown':
-            nb_cells.append(
-                new_markdown_cell(source=block))
+            if block != "":
+                nb_cells.append(
+                    new_markdown_cell(source=block))
         elif cell_type == 'code':
             nb_cells.append(new_code_cell(source=block))
         elif cell_type == 'raw':

@@ -38,4 +38,6 @@ plt.plot(range(100), [x * x for x in range(100)], 'k-')
 plt.show()
 ```
 
+```
 This is a raw cell.
+```
