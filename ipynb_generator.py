@@ -134,12 +134,12 @@ def executenb(text, nbversion=4, timeout=600, kernel_name='python3', run_path='.
 
 
 if __name__ == "__main__":
-    def main(text, filename=None, execute=True):
+    def main(text, filename=None, execute=True, timeout=600):
         cells = readmd(text)
         # print(cells)
         output = translatenb(cells)
         if execute:
-            output = executenb(output, outputname=filename)
+            output = executenb(output, timeout=timeout, outputname=filename)
         if filename is not None:
             with open(filename, 'w') as fout:
                 fout.write(output)
@@ -180,6 +180,7 @@ This is the footer notes for this generated notebook.
     parser.add_argument('--nooverwrite', action='store_true', help='avoid to overwrite an existing file')
     parser.add_argument('--suffix', action='store', type=str, default='.ipynb', help='suffix for the output')
     parser.add_argument('--prefix', action='store', type=str, help='prefix for the output')
+    parser.add_argument('--timeout', action='store', type=int, default=600, help='timeout for the execution')
     args = parser.parse_args()
 
     filenames = args.filenames
@@ -187,9 +188,10 @@ This is the footer notes for this generated notebook.
     overwrite = not args.nooverwrite
     suffix = args.suffix
     prefix = args.prefix
+    timeout = args.timeout
 
     if len(filenames) == 0:
-        print(main(text))
+        print(main(text, timeout=timeout))
         import sys
         sys.exit(0)
 
@@ -205,4 +207,4 @@ This is the footer notes for this generated notebook.
         if not overwrite and os.path.isfile(outputname):
             raise RuntimeError(
                 'An output file [{}] already exists'.format(outputname))
-        main(text, outputname, execute)
+        main(text, outputname, execute, timeout)
