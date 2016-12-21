@@ -27,12 +27,15 @@ def readmd(text):
         if m is not None:
             if m is not None:
                 shortname = m.group(1)
-                if shortname is not None:
-                    cell_type = 'code'
-                    language = shortname
-                else:
+                if shortname is None:
                     cell_type = 'markdown'
                     language = None
+                elif shortname == 'raw':
+                    cell_type = 'raw'
+                    language = None
+                else:
+                    cell_type = 'code'
+                    language = shortname
                 cells.append([cell_type, language, []])
             else:
                 raise SyntaxError(
@@ -41,7 +44,7 @@ def readmd(text):
             if len(cells) == 0:
                 cells.append([cell_type, language, []])  ## the first line
 
-            if cell_type == 'markdown':
+            if cell_type in ('markdown', 'raw'):
                 cells[-1][2].append(line)
             elif cell_type == 'code':
                 if not line.lstrip().startswith('```'):
@@ -64,6 +67,7 @@ def translatenb_v3(cells):
     from nbformat.v3 import (
         new_code_cell, new_text_cell, new_worksheet,
         new_notebook, new_metadata, new_author)
+    from nbformat.v3 import new_text_cell
 
     nb = new_worksheet()
     for cell_type, language, block in cells:
@@ -74,6 +78,8 @@ def translatenb_v3(cells):
                 new_text_cell(u'markdown', source=block))
         elif cell_type == 'code':
             nb.cells.append(new_code_cell(input=block))
+        elif cell_type == 'raw':
+            nb.cells.append(new_text_cell('raw', source=block))
         else:
             raise ValueError('Wrong cell_type was given [{}]'.format(cell_type))
 
@@ -87,6 +93,7 @@ def translatenb_v3(cells):
 def translatenb_v4(cells):
     from nbformat.v4 import (
         new_code_cell, new_markdown_cell, new_notebook)
+    from nbformat.v4.nbbase import new_raw_cell
 
     nb_cells = []
     for cell_type, language, block in cells:
@@ -97,6 +104,8 @@ def translatenb_v4(cells):
                 new_markdown_cell(source=block))
         elif cell_type == 'code':
             nb_cells.append(new_code_cell(source=block))
+        elif cell_type == 'raw':
+            nb_cells.append(new_raw_cell(source=block))
         else:
             raise ValueError('Wrong cell_type was given [{}]'.format(cell_type))
 
