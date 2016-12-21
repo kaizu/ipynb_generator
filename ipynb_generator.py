@@ -20,7 +20,7 @@ logger.addHandler(handler)
 
 def readmd(text):
     delimiter = re.compile(r'<!---\s*([a-zA-Z0-9]+)?\s*--->')
-    cell_type, language = None, None
+    cell_type, language = 'markdown', None
     cells = []
     for line in text.splitlines():
         m = delimiter.search(line)
@@ -30,15 +30,17 @@ def readmd(text):
                 if shortname is not None:
                     cell_type = 'code'
                     language = shortname
-                    cells.append([cell_type, language, []])
                 else:
                     cell_type = 'markdown'
                     language = None
-                    cells.append([cell_type, language, []])
+                cells.append([cell_type, language, []])
             else:
                 raise SyntaxError(
                     'Wrong syntax of cell delimiter: \n{s}'.format(line))
         else:
+            if len(cells) == 0:
+                cells.append([cell_type, language, []])  ## the first line
+
             if cell_type == 'markdown':
                 cells[-1][2].append(line)
             elif cell_type == 'code':

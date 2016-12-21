@@ -1,4 +1,3 @@
-<!--- --->
 ## Test of Jupyter Notebook generator
 
 This is a generated file using `misc/ipynb_generator.py`.
