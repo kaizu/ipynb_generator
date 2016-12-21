@@ -7,7 +7,7 @@ https://github.com/hplgit/doconce/blob/master/doc/src/ipynb/ipynb_generator.py
 
 import re
 
-def read(text):
+def readmd(text):
     delimiter = re.compile(r'<!---\s*([a-zA-Z0-9]+)?\s*--->')
     cell_type, language = None, None
     cells = []
@@ -38,16 +38,16 @@ def read(text):
                     'line\n  {:s}\nhas not beggining cell delimiter [{}]'.format(line, cell_type))
     return cells
 
-def translate(cells, nbversion=4):
+def translatenb(cells, nbversion=4):
     if nbversion == 3:
-        return translate_v3(cells)
+        return translatenb_v3(cells)
     elif nbversion == 4:
-        return translate_v4(cells)
+        return translatenb_v4(cells)
     else:
         raise ValueError(
             'nbversion [{}] must be either 3 or 4'.format(nbversion))
 
-def translate_v3(cells):
+def translatenb_v3(cells):
     from nbformat.v3 import (
         new_code_cell, new_text_cell, new_worksheet,
         new_notebook, new_metadata, new_author)
@@ -71,7 +71,7 @@ def translate_v3(cells):
     import nbformat.v4.nbjson as nbjson
     return nbjson.writes(nb)
 
-def translate_v4(cells):
+def translatenb_v4(cells):
     from nbformat.v4 import (
         new_code_cell, new_markdown_cell, new_notebook)
 
@@ -91,7 +91,7 @@ def translate_v4(cells):
     from nbformat import writes
     return writes(nb, version=4)
 
-def execute(text, nbversion=4, timeout=600, kernel_name='python3'):
+def executenb(text, nbversion=4, timeout=600, kernel_name='python3'):
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor
 
@@ -102,11 +102,12 @@ def execute(text, nbversion=4, timeout=600, kernel_name='python3'):
 
 
 if __name__ == "__main__":
-    def main(text, filename=None):
-        cells = read(text)
+    def main(text, filename=None, execute=True):
+        cells = readmd(text)
         # print(cells)
-        output = translate(cells)
-        output = execute(output)
+        output = translatenb(cells)
+        if execute:
+            output = executenb(output)
         if filename is None:
             return output
         else:
@@ -139,22 +140,32 @@ print(np.log(1.0))
 This is the footer notes for this generated notebook.
 """
 
-    import sys
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate Jupyter notebooks from markdown files.')
+    parser.add_argument('filenames', metavar='FILENAME', type=str, nargs='*', help='markdown filenames')
+    parser.add_argument('--noexec', '-n', action='store_true', help='save notebooks without execution')
+    parser.add_argument('--nooverwrite', action='store_true', help='avoid to overwrite an existing file')
+    parser.add_argument('--suffix', action='store', type=str, default='.ipynb', help='suffix for the output')
+    args = parser.parse_args()
 
-    suffix = '.ipynb'
-    overwrite = True
+    filenames = args.filenames
+    execute = not args.noexec
+    overwrite = not args.nooverwrite
+    suffix = args.suffix
 
-    if len(sys.argv) == 1:
+    if len(filenames) == 0:
         print(main(text))
-    else:
-        import os.path
+        import sys
+        sys.exit(0)
 
-        for filename in sys.argv[1: ]:
-            with open(filename, 'r') as fin:
-                text = fin.read()
-            root, ext = os.path.splitext(filename)
-            outputname = '{:s}{:s}'.format(root, suffix)
-            if not overwrite and os.path.isfile(outputname):
-                raise RuntimeError(
-                    'An output file [{}] already exists'.format(outputname))
-            main(text, outputname)
+    import os.path
+
+    for filename in filenames:
+        with open(filename, 'r') as fin:
+            text = fin.read()
+        root, ext = os.path.splitext(filename)
+        outputname = '{:s}{:s}'.format(root, suffix)
+        if not overwrite and os.path.isfile(outputname):
+            raise RuntimeError(
+                'An output file [{}] already exists'.format(outputname))
+        main(text, outputname, execute)
