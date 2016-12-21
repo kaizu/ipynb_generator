@@ -100,6 +100,17 @@ def execute(text, nbversion=4, timeout=600, kernel_name='python3'):
 
 
 if __name__ == "__main__":
+    def main(text, filename=None):
+        cells = read(text)
+        # print(cells)
+        output = translate(cells)
+        output = execute(output)
+        if filename is None:
+            return output
+        else:
+            with open(filename, 'w') as fout:
+                fout.write(output)
+
     text = """<!------>
 ## Test of Jupyter Notebook generator
 
@@ -126,10 +137,19 @@ print(np.log(1.0))
 This is the footer notes for this generated notebook.
 """
 
-    cells = read(text)
-    # print(cells)
-    output = translate(cells)
-    output = execute(output)
-    print(output)
-    with open('test.ipynb', 'w') as fout:
-        fout.write(output)
+    import sys
+
+    if len(sys.argv) == 1:
+        print(main(text))
+    else:
+        import os.path
+
+        for filename in sys.argv[1: ]:
+            with open(filename, 'r') as fin:
+                text = fout.read()
+            root, ext = os.path.splitext(filename)
+            outputname = '{s}.ipynb'.format(root)
+            # if os.path.isfile(outputname):
+            #     raise RuntimeError(
+            #         'An output file [{}] already exists'.format(outputname))
+            main(text, outputname)
