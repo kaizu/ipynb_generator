@@ -146,9 +146,9 @@ This is the footer notes for this generated notebook.
 
         for filename in sys.argv[1: ]:
             with open(filename, 'r') as fin:
-                text = fout.read()
+                text = fin.read()
             root, ext = os.path.splitext(filename)
-            outputname = '{s}.ipynb'.format(root)
+            outputname = '{:s}.ipynb'.format(root)
             # if os.path.isfile(outputname):
             #     raise RuntimeError(
             #         'An output file [{}] already exists'.format(outputname))
