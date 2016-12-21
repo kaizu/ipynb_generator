@@ -8,7 +8,7 @@ https://github.com/hplgit/doconce/blob/master/doc/src/ipynb/ipynb_generator.py
 import re
 
 def read(text):
-    delimiter = re.compile(r'<!---([a-zA-Z0-9]+)?--->')
+    delimiter = re.compile(r'<!---\s*([a-zA-Z0-9]+)?\s*--->')
     cell_type, language = None, None
     cells = []
     for line in text.splitlines():
@@ -28,12 +28,14 @@ def read(text):
                 raise SyntaxError(
                     'Wrong syntax of cell delimiter: \n{s}'.format(line))
         else:
-            if cell_type in ('markdown', 'code'):
+            if cell_type == 'markdown':
                 cells[-1][2].append(line)
-                # do something here
+            elif cell_type == 'code':
+                if not line.lstrip().startswith('```'):
+                    cells[-1][2].append(line)
             else:
                 raise SyntaxError(
-                    'line\n  {s}\nhas not beggining cell delimiter'.format(line))
+                    'line\n  {:s}\nhas not beggining cell delimiter [{}]'.format(line, cell_type))
     return cells
 
 def translate(cells, nbversion=4):
@@ -111,11 +113,11 @@ if __name__ == "__main__":
             with open(filename, 'w') as fout:
                 fout.write(output)
 
-    text = """<!------>
+    text = """<!--- --->
 ## Test of Jupyter Notebook generator
 
 This is a generated file using `misc/ipynb_generator.py`.
-<!------>
+<!--- --->
 ## Math
 
 This is a test notebook.
@@ -125,13 +127,13 @@ $$y'=ky$$
 import numpy as np
 
 print(np.exp(1.0))
-```<!------>
+```<!--- --->
 The above is a Python code for the following:
 
 ```python
 print(np.log(1.0))
 ```
-<!------>
+<!--- --->
 ## Text
 
 This is the footer notes for this generated notebook.
