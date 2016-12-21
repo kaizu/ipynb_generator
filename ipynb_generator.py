@@ -7,6 +7,17 @@ https://github.com/hplgit/doconce/blob/master/doc/src/ipynb/ipynb_generator.py
 
 import re
 
+from logging import getLogger, StreamHandler, NullHandler, Formatter, DEBUG
+logger = getLogger(__name__)
+# handler = NullHandler()
+handler = StreamHandler()
+formatter = Formatter('%(levelname)s:%(name)s:%(message)s')
+handler.setLevel(DEBUG)
+handler.setFormatter(formatter)
+logger.setLevel(DEBUG)
+logger.addHandler(handler)
+
+
 def readmd(text):
     delimiter = re.compile(r'<!---\s*([a-zA-Z0-9]+)?\s*--->')
     cell_type, language = None, None
@@ -91,14 +102,24 @@ def translatenb_v4(cells):
     from nbformat import writes
     return writes(nb, version=4)
 
-def executenb(text, nbversion=4, timeout=600, kernel_name='python3'):
+def executenb(text, nbversion=4, timeout=600, kernel_name='python3', run_path='.', outputname=None):
     import nbformat
     from nbconvert.preprocessors import ExecutePreprocessor
+    from nbconvert.preprocessors.execute import CellExecutionError
 
     nb = nbformat.reads(text, as_version=nbversion)
     ep = ExecutePreprocessor(timeout=timeout, kernel_name=kernel_name)
-    ep.preprocess(nb, {'metadata': {'path': '.'}})
-    return nbformat.writes(nb)
+
+    try:
+        out = ep.preprocess(nb, {'metadata': {'path': run_path}})
+    except CellExecutionError:
+        msg = 'Error executing the notebook.'
+        if outputname is not None:
+            msg += ' See notebook "{:s}" for the traceback.'.format(outputname)
+        logger.error(msg)
+        raise
+    finally:
+        return nbformat.writes(nb)
 
 
 if __name__ == "__main__":
@@ -107,7 +128,7 @@ if __name__ == "__main__":
         # print(cells)
         output = translatenb(cells)
         if execute:
-            output = executenb(output)
+            output = executenb(output, outputname=filename)
         if filename is None:
             return output
         else:
